@@ -1365,6 +1365,11 @@ public final class DefaultPermissionGrantPolicy {
             final int permissionGrantCount = permissionGrants.size();
             for (int j = 0; j < permissionGrantCount; j++) {
                 DefaultPermissionGrant permissionGrant = permissionGrants.get(j);
+                // Skip permissions that are not defined on this platform
+                // version instead of crashing system_server. Matches the
+                // upstream fix (AOSP 11+): default-permissions XMLs may list
+                // permissions that only exist on newer Android releases,
+                // e.g. android.permission.POST_NOTIFICATIONS (API 33).
                 if (!isPermissionDangerous(permissionGrant.name)) {
                     Log.w(TAG, "Ignoring permission " + permissionGrant.name
                             + " which isn't dangerous");
@@ -1561,12 +1566,15 @@ public final class DefaultPermissionGrantPolicy {
     }
 
     private boolean isPermissionDangerous(String name) {
+        if (name == null) {
+            return false;
+        }
         try {
-            final PermissionInfo pi = mContext.getPackageManager().getPermissionInfo(name, 0);
-            return (pi.getProtection() == PermissionInfo.PROTECTION_DANGEROUS);
-        } catch (NameNotFoundException e) {
-            // When unknown assume it's dangerous to be on the safe side
-            return true;
+            PermissionInfo pi = mContext.getPackageManager().getPermissionInfo(name, 0);
+            return pi != null
+                    && pi.getProtection() == PermissionInfo.PROTECTION_DANGEROUS;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
         }
     }
 

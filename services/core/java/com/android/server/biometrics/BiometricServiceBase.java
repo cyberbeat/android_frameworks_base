@@ -791,6 +791,11 @@ public abstract class BiometricServiceBase extends SystemService
 
     protected void handleEnumerate(BiometricAuthenticator.Identifier identifier, int remaining) {
         ClientMonitor client = getCurrentClient();
+        if (client == null) {
+            Slog.w(getTag(), "handleEnumerate() without client, req="
+                    + identifier + ", rem=" + remaining);
+            return;
+        }
 
         client.onEnumerationResult(identifier, remaining);
 

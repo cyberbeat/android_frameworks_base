@@ -193,6 +193,7 @@ public class LocationControllerImpl extends BroadcastReceiver implements Locatio
         if (LocationManager.HIGH_POWER_REQUEST_CHANGE_ACTION.equals(action)) {
             updateActiveLocationRequests();
         } else if (LocationManager.MODE_CHANGED_ACTION.equals(action)) {
+            updateActiveLocationRequests();
             mHandler.sendEmptyMessage(H.MSG_LOCATION_SETTINGS_CHANGED);
         }
     }
